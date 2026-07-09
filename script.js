@@ -44,15 +44,33 @@
     }
   }
 
-  /* ---- Live UTC clock ---- */
+  /* ---- Live Brussels clock (auto CEST/CET) ---- */
   const clockEl = document.querySelector(".clock");
   if (clockEl) {
     function render() {
       const now = new Date();
-      const hh = String(now.getUTCHours()).padStart(2, "0");
-      const mm = String(now.getUTCMinutes()).padStart(2, "0");
-      const ss = String(now.getUTCSeconds()).padStart(2, "0");
-      clockEl.innerHTML = `${hh}:${mm}:${ss}<span class="tz">UTC</span>`;
+      const timeParts = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Brussels",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(now);
+      const get = (type) => timeParts.find((p) => p.type === type)?.value || "00";
+
+      let tz = "CET";
+      try {
+        const offsetParts = new Intl.DateTimeFormat("en-US", {
+          timeZone: "Europe/Brussels",
+          timeZoneName: "longOffset",
+        }).formatToParts(now);
+        const offset = offsetParts.find((p) => p.type === "timeZoneName")?.value || "";
+        tz = offset.includes("+02") ? "CEST" : "CET";
+      } catch (e) {
+        /* longOffset unsupported in older browsers; default to CET */
+      }
+
+      clockEl.innerHTML = `${get("hour")}:${get("minute")}:${get("second")}<span class="tz">${tz}</span>`;
     }
     render();
     setInterval(render, 1000);
@@ -347,7 +365,7 @@
       '<div class="boot-lines">' +
       '<div class="line" style="animation-delay:0ms">&gt; initializing secure session...</div>' +
       '<div class="line" style="animation-delay:200ms">&gt; handshake: <span class="ok">TLS 1.3 OK</span></div>' +
-      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.com...</div>' +
+      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.be...</div>' +
       '<div class="line" style="animation-delay:600ms">&gt; route established <span class="ok">[6 hops]</span></div>' +
       '<div class="boot-bar-track"><div class="boot-bar-fill"></div></div>' +
       '<div class="boot-skip">press any key to skip</div>' +

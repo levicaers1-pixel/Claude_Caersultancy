@@ -68,7 +68,11 @@ header.site {
   align-items: center;
   gap: 9px;
 }
-.logo span { color: var(--blue); }
+.logo span.mark {
+  color: var(--blue);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
 
 .pulse-dot {
   width: 7px;

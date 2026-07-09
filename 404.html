@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Host unreachable — Caersultancy</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A1120'/%3E%3Ccircle cx='16' cy='9' r='3' fill='%234FB8FF'/%3E%3Ccircle cx='7' cy='23' r='3' fill='%235FE3A1'/%3E%3Ccircle cx='25' cy='23' r='3' fill='%235FE3A1'/%3E%3Cpath d='M16 12 L7 20 M16 12 L25 20' stroke='%234FB8FF' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav-row">
+    <a href="index.html" class="logo"><span class="pulse-dot" aria-hidden="true"></span><span class="mark">CAERS</span>ultancy</a>
+    <nav class="route">
+      <a href="index.html">home</a>
+      <span class="hop-sep">/</span>
+      <a href="services.html">services</a>
+      <span class="hop-sep">/</span>
+      <a href="about.html">about</a>
+      <span class="hop-sep">/</span>
+      <a href="contact.html">contact</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-nav wrap">
+    <a href="index.html">home</a>
+    <a href="services.html">services</a>
+    <a href="about.html">about</a>
+    <a href="contact.html">contact</a>
+  </nav>
+</header>
+
+<section class="hero" style="padding-bottom:64px;">
+  <div class="wrap">
+    <div class="eyebrow">// 404</div>
+    <h1 class="headline decode" style="max-width:18ch;">Host unreachable.</h1>
+    <p class="lede">The route you followed doesn't resolve to anything on this network. It may have moved, or never existed.</p>
+
+    <div style="display:flex; gap:14px; margin-bottom:44px; flex-wrap:wrap;">
+      <a href="index.html" class="btn primary">Return to home →</a>
+      <a href="contact.html" class="btn ghost">Report a broken link</a>
+    </div>
+
+    <div class="term" data-live>
+      <div class="cmd" data-text="traceroute --page requested"></div>
+      <div class="hop"><span class="n">1</span><span class="host">you</span><span class="stage">— followed a link</span><span class="ms">2</span></div>
+      <div class="hop"><span class="n">2</span><span class="host">dns.internal</span><span class="stage">— resolving route...</span><span class="ms">11</span></div>
+      <div class="hop"><span class="n">3</span><span class="host">edge.internal</span><span class="stage">— no matching path</span><span class="ms">19</span></div>
+      <div class="hop final" style="color:var(--amber);"><span class="n">4</span><span class="host" style="color:var(--amber);">404</span><span class="stage">— host unreachable</span><span class="ms" style="color:var(--amber);">timeout</span></div>
+    </div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap footer-row">
+    <span class="status-line"><span class="pulse-dot" aria-hidden="true"></span>available for new engagements</span>
+    <span>© 2026 Caersultancy — Antwerp, BE</span>
+    <a href="mailto:levicaers1@hotmail.com">levicaers1@hotmail.com</a>
+    <span class="clock text-mono">00:00:00<span class="tz">CEST</span></span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
