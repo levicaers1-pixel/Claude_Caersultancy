@@ -44,6 +44,61 @@
     }
   }
 
+  /* ---- Live UTC clock ---- */
+  const clockEl = document.querySelector(".clock");
+  if (clockEl) {
+    function render() {
+      const now = new Date();
+      const hh = String(now.getUTCHours()).padStart(2, "0");
+      const mm = String(now.getUTCMinutes()).padStart(2, "0");
+      const ss = String(now.getUTCSeconds()).padStart(2, "0");
+      clockEl.innerHTML = `${hh}:${mm}:${ss}<span class="tz">UTC</span>`;
+    }
+    render();
+    setInterval(render, 1000);
+  }
+
+  /* ---- Animated stat counters ---- */
+  const statEls = document.querySelectorAll(".stat-num[data-target]");
+  if (statEls.length) {
+    const animateStat = (el) => {
+      const target = parseFloat(el.getAttribute("data-target"));
+      const suffix = el.getAttribute("data-suffix") || "";
+      const isInt = Number.isInteger(target);
+      if (reduceMotion) {
+        el.textContent = (isInt ? target : target.toFixed(1)) + suffix;
+        return;
+      }
+      const duration = 1100;
+      let start = null;
+      function step(ts) {
+        if (start === null) start = ts;
+        const progress = Math.min(1, (ts - start) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const val = target * eased;
+        el.textContent = (isInt ? Math.round(val) : val.toFixed(1)) + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    };
+    if ("IntersectionObserver" in window) {
+      const statIo = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateStat(entry.target);
+              statIo.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.5 }
+      );
+      statEls.forEach((el) => statIo.observe(el));
+    } else {
+      statEls.forEach(animateStat);
+    }
+  }
+
   /* ---- HUD corner brackets on cards ---- */
   document.querySelectorAll(".card").forEach((card) => {
     const tl = document.createElement("span");
@@ -292,7 +347,7 @@
       '<div class="boot-lines">' +
       '<div class="line" style="animation-delay:0ms">&gt; initializing secure session...</div>' +
       '<div class="line" style="animation-delay:200ms">&gt; handshake: <span class="ok">TLS 1.3 OK</span></div>' +
-      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.com...</div>' +
+      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.be...</div>' +
       '<div class="line" style="animation-delay:600ms">&gt; route established <span class="ok">[6 hops]</span></div>' +
       '<div class="boot-bar-track"><div class="boot-bar-fill"></div></div>' +
       '<div class="boot-skip">press any key to skip</div>' +
