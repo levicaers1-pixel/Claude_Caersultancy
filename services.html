@@ -12,7 +12,7 @@
 
 <header class="site">
   <div class="wrap nav-row">
-    <a href="index.html" class="logo">caer<span>sultancy</span></a>
+    <a href="index.html" class="logo"><span class="pulse-dot" aria-hidden="true"></span>caer<span>sultancy</span></a>
     <nav class="route">
       <a href="index.html">home</a>
       <span class="hop-sep">/</span>
@@ -22,7 +22,16 @@
       <span class="hop-sep">/</span>
       <a href="contact.html">contact</a>
     </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
+  <nav class="mobile-nav wrap">
+    <a href="index.html">home</a>
+    <a href="services.html" class="active">services</a>
+    <a href="about.html">about</a>
+    <a href="contact.html">contact</a>
+  </nav>
 </header>
 
 <section class="hero" style="padding-bottom:48px;">
@@ -36,27 +45,27 @@
 <section>
   <div class="wrap">
     <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.1.1 / architecture</div>
         <h3>Network architecture & design</h3>
         <p>Campus, WAN, and data center design — from greenfield builds to redesigns of networks that have outgrown their original plan. Includes topology, capacity planning, and vendor selection.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.2.1 / wireless</div>
         <h3>Wireless & Wi-Fi design</h3>
         <p>Ekahau-based predictive and on-site survey work, AP placement, and validation for environments where coverage and capacity both matter — warehouses, hospitals, campuses.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.3.1 / security</div>
         <h3>Security & network access control</h3>
         <p>ClearPass and NAC design, segmentation strategy, and firewall architecture across Fortinet and Palo Alto estates. Built to pass audit, not just go live.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.4.1 / cloud-managed</div>
         <h3>Cloud-managed networking</h3>
         <p>Aruba Central and SD-WAN rollouts for multi-site organizations that need centralized visibility without a forklift upgrade.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.5.1 / presales</div>
         <h3>Presales & technical enablement</h3>
         <p>Deep technical support for sales cycles — solution design, proof of concepts, and internal enablement material so your team can sell what you build.</p>
@@ -74,11 +83,13 @@
 </section>
 
 <footer class="site">
-  <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px;">
+  <div class="wrap footer-row">
+    <span class="status-line"><span class="pulse-dot" aria-hidden="true"></span>available for new engagements</span>
     <span>© 2026 Caersultancy — Antwerp, BE</span>
     <a href="mailto:levicaers1@hotmail.com">levicaers1@hotmail.com</a>
   </div>
 </footer>
 
+<script src="script.js"></script>
 </body>
 </html>

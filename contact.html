@@ -12,7 +12,7 @@
 
 <header class="site">
   <div class="wrap nav-row">
-    <a href="index.html" class="logo">caer<span>sultancy</span></a>
+    <a href="index.html" class="logo"><span class="pulse-dot" aria-hidden="true"></span>caer<span>sultancy</span></a>
     <nav class="route">
       <a href="index.html">home</a>
       <span class="hop-sep">/</span>
@@ -22,7 +22,16 @@
       <span class="hop-sep">/</span>
       <a href="contact.html" class="active">contact</a>
     </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
+  <nav class="mobile-nav wrap">
+    <a href="index.html">home</a>
+    <a href="services.html">services</a>
+    <a href="about.html">about</a>
+    <a href="contact.html" class="active">contact</a>
+  </nav>
 </header>
 
 <section class="hero" style="padding-bottom:48px;">
@@ -65,11 +74,13 @@
 </section>
 
 <footer class="site">
-  <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px;">
+  <div class="wrap footer-row">
+    <span class="status-line"><span class="pulse-dot" aria-hidden="true"></span>available for new engagements</span>
     <span>© 2026 Caersultancy — Antwerp, BE</span>
     <a href="mailto:levicaers1@hotmail.com">levicaers1@hotmail.com</a>
   </div>
 </footer>
 
+<script src="script.js"></script>
 </body>
 </html>

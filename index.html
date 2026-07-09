@@ -13,7 +13,7 @@
 
 <header class="site">
   <div class="wrap nav-row">
-    <a href="index.html" class="logo">caer<span>sultancy</span></a>
+    <a href="index.html" class="logo"><span class="pulse-dot" aria-hidden="true"></span>caer<span>sultancy</span></a>
     <nav class="route">
       <a href="index.html" class="active">home</a>
       <span class="hop-sep">/</span>
@@ -23,7 +23,16 @@
       <span class="hop-sep">/</span>
       <a href="contact.html">contact</a>
     </nav>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
+  <nav class="mobile-nav wrap">
+    <a href="index.html" class="active">home</a>
+    <a href="services.html">services</a>
+    <a href="about.html">about</a>
+    <a href="contact.html">contact</a>
+  </nav>
 </header>
 
 <section class="hero">
@@ -37,13 +46,13 @@
       <a href="services.html" class="btn ghost">See services</a>
     </div>
 
-    <div class="term">
-      <div class="cmd">traceroute caersultancy.be</div>
-      <div class="hop"><span class="n">1</span><span class="host">you</span><span class="stage">— initial brief & constraints</span><span class="ms">2ms</span></div>
-      <div class="hop"><span class="n">2</span><span class="host">discovery.internal</span><span class="stage">— site assessment, requirements</span><span class="ms">14ms</span></div>
-      <div class="hop"><span class="n">3</span><span class="host">architecture.internal</span><span class="stage">— design, vendor selection</span><span class="ms">31ms</span></div>
-      <div class="hop"><span class="n">4</span><span class="host">build.internal</span><span class="stage">— config, validation, rollout</span><span class="ms">27ms</span></div>
-      <div class="hop"><span class="n">5</span><span class="host">handover.internal</span><span class="stage">— documentation, training</span><span class="ms">9ms</span></div>
+    <div class="term" data-live>
+      <div class="cmd" data-text="traceroute caersultancy.be"></div>
+      <div class="hop"><span class="n">1</span><span class="host">you</span><span class="stage">— initial brief & constraints</span><span class="ms">2</span></div>
+      <div class="hop"><span class="n">2</span><span class="host">discovery.internal</span><span class="stage">— site assessment, requirements</span><span class="ms">14</span></div>
+      <div class="hop"><span class="n">3</span><span class="host">architecture.internal</span><span class="stage">— design, vendor selection</span><span class="ms">31</span></div>
+      <div class="hop"><span class="n">4</span><span class="host">build.internal</span><span class="stage">— config, validation, rollout</span><span class="ms">27</span></div>
+      <div class="hop"><span class="n">5</span><span class="host">handover.internal</span><span class="stage">— documentation, training</span><span class="ms">9</span></div>
       <div class="hop final"><span class="n">6</span><span class="host">caersultancy.be</span><span class="stage">— reached</span><span class="ms">ok</span></div>
     </div>
   </div>
@@ -54,22 +63,22 @@
     <h2 class="section-title">Where I come in</h2>
     <p class="section-sub">Placeholder overview — three or four core engagement types. Replace with your real service lines.</p>
     <div class="grid">
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.1.1</div>
         <h3>Architecture & design</h3>
         <p>Campus, data center, and SD-WAN design built around how the business actually operates — not a vendor template.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.2.1</div>
         <h3>Wireless & site design</h3>
         <p>Ekahau-driven Wi-Fi design and validation for environments where "it mostly works" isn't good enough.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.3.1</div>
         <h3>Security & NAC</h3>
         <p>ClearPass, firewall, and access control architecture that holds up under audit and under attack.</p>
       </div>
-      <div class="card">
+      <div class="card reveal">
         <div class="ip">10.0.4.1</div>
         <h3>Presales & enablement</h3>
         <p>Technical presales support and internal enablement for teams selling complex networking solutions.</p>
@@ -86,17 +95,21 @@
       <span class="badge">HPE Aruba</span>
       <span class="badge">Cisco</span>
       <span class="badge">Fortinet</span>
+      <span class="badge">Palo Alto Networks</span>
+      <span class="badge">F5</span>
       <span class="badge">Ekahau</span>
     </div>
   </div>
 </section>
 
 <footer class="site">
-  <div class="wrap" style="display:flex; justify-content:space-between; width:100%; flex-wrap:wrap; gap:12px;">
+  <div class="wrap footer-row">
+    <span class="status-line"><span class="pulse-dot" aria-hidden="true"></span>available for new engagements</span>
     <span>© 2026 Caersultancy — Antwerp, BE</span>
     <a href="mailto:levicaers1@hotmail.com">levicaers1@hotmail.com</a>
   </div>
 </footer>
 
+<script src="script.js"></script>
 </body>
 </html>
