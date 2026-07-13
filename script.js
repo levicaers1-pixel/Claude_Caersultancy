@@ -365,7 +365,7 @@
       '<div class="boot-lines">' +
       '<div class="line" style="animation-delay:0ms">&gt; initializing secure session...</div>' +
       '<div class="line" style="animation-delay:200ms">&gt; handshake: <span class="ok">TLS 1.3 OK</span></div>' +
-      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.be...</div>' +
+      '<div class="line" style="animation-delay:400ms">&gt; resolving caersultancy.com...</div>' +
       '<div class="line" style="animation-delay:600ms">&gt; route established <span class="ok">[6 hops]</span></div>' +
       '<div class="boot-bar-track"><div class="boot-bar-fill"></div></div>' +
       '<div class="boot-skip">press any key to skip</div>' +
