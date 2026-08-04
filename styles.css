@@ -401,6 +401,33 @@ p.section-sub {
   border-radius: 20px;
   padding: 7px 14px;
 }
+.badge-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 20px;
+  background: transparent;
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.badge-logo img {
+  height: 22px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(75%);
+  opacity: 0.55;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+.badge-logo:hover {
+  background: #fff;
+  border-color: #fff;
+}
+.badge-logo:hover img {
+  filter: none;
+  opacity: 1;
+}
 
 /* ===== Footer ===== */
 footer.site {
