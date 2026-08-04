@@ -244,6 +244,25 @@ p.lede {
   margin: 0 0 40px;
 }
 
+.about-hero {
+  display: flex;
+  align-items: center;
+  gap: 56px;
+}
+.about-hero-text { flex: 1; min-width: 280px; }
+.about-hero-photo {
+  width: 240px;
+  height: 345px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+@media (max-width: 720px) {
+  .about-hero { flex-direction: column-reverse; align-items: flex-start; }
+  .about-hero-photo { width: 200px; height: 288px; }
+}
+
 .term {
   background: var(--panel);
   border: 1px solid var(--line);
