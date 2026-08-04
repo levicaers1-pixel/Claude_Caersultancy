@@ -78,7 +78,7 @@ header.site {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--green);
+  background: var(--amber);
   position: relative;
   flex-shrink: 0;
 }
@@ -87,7 +87,7 @@ header.site {
   position: absolute;
   inset: -5px;
   border-radius: 50%;
-  border: 1px solid var(--green);
+  border: 1px solid var(--amber);
   opacity: 0.6;
   animation: pulse-ring 2.2s ease-out infinite;
 }
