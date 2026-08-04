@@ -251,8 +251,8 @@ p.lede {
 }
 .about-hero-text { flex: 1; min-width: 280px; }
 .about-hero-photo {
-  width: 280px;
-  height: 426px;
+  width: 320px;
+  height: 431px;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid var(--line);
@@ -260,7 +260,7 @@ p.lede {
 }
 @media (max-width: 720px) {
   .about-hero { flex-direction: column-reverse; align-items: flex-start; }
-  .about-hero-photo { width: 220px; height: 335px; }
+  .about-hero-photo { width: 260px; height: 350px; }
 }
 
 .term {
