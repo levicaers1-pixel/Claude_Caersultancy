@@ -50,6 +50,7 @@
 </header>
 
 <section class="hero">
+  <canvas id="hero-orb" aria-hidden="true"></canvas>
   <div class="wrap">
     <div class="eyebrow">// independent network architecture & presales</div>
     <h1 class="headline decode">Networks designed by someone who's carried the pager.</h1>
@@ -61,6 +62,16 @@
     </div>
   </div>
 </section>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.143.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.143.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="hero-orb.js"></script>
 
 <section class="divider">
   <div class="wrap">
