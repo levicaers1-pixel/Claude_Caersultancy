@@ -591,7 +591,11 @@
     window.addEventListener("keydown", (e) => {
       if (overlay.classList.contains("open")) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
-      if ((e.key === "`" || e.key === "~") && tag !== "INPUT" && tag !== "TEXTAREA") {
+      // e.code checks the physical key position (works on AZERTY etc. where
+      // that key doesn't actually type ` or ~), e.key is a fallback for
+      // browsers/layouts where code is unavailable.
+      const isTrigger = e.code === "Backquote" || e.key === "`" || e.key === "~";
+      if (isTrigger && tag !== "INPUT" && tag !== "TEXTAREA") {
         e.preventDefault();
         openCli();
       }
