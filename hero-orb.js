@@ -35,7 +35,12 @@ if (canvas) {
   /* Postprocessing — a single bloom pass for the glow                 */
   /* ---------------------------------------------------------------- */
   const renderPass = new RenderPass(scene, camera);
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.32, 0.35);
+  // A real resolution here, not a degenerate (1,1) placeholder — this
+  // feeds UnrealBloomPass's mip-chain render-target sizing, and my test
+  // harness (a single synchronous resize) never exercised what happens
+  // when ResizeObserver fires several times during real page load (font
+  // load, layout settling) before the mip chain has a sane basis size.
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.75, 0.32, 0.35);
   const composer = new EffectComposer(renderer);
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
@@ -244,10 +249,18 @@ void main() {
   /* ---------------------------------------------------------------- */
   /* Sizing — the canvas is contained in the hero, not the viewport    */
   /* ---------------------------------------------------------------- */
+  let lastW = 0, lastH = 0;
   function resize() {
     const rect = canvas.getBoundingClientRect();
     const w = Math.max(1, Math.round(rect.width));
     const h = Math.max(1, Math.round(rect.height));
+    // ResizeObserver fires repeatedly during real page load (font load,
+    // layout settling) — my earlier tests only ever called this once, so
+    // skip no-op repeats rather than re-running composer.setSize() on an
+    // unchanged size, which could compound in the bloom pass's internal
+    // mip-chain state across those extra calls.
+    if (w === lastW && h === lastH) return;
+    lastW = w; lastH = h;
     renderer.setPixelRatio(getDPR());
     renderer.setSize(w, h, false);
     composer.setPixelRatio(getDPR());
