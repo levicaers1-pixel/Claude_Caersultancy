@@ -188,17 +188,22 @@ nav.route a.active::after { transform: scaleX(1); }
 /* ===== Hero traceroute ===== */
 .hero {
   padding: 84px 0 64px;
-  min-height: 660px;
-  display: flex;
-  align-items: center;
   border-bottom: 1px solid var(--line);
   position: relative;
-  background: var(--bg); /* opaque so the site-wide #net-canvas doesn't show through behind the orb */
   background-image: radial-gradient(rgba(79, 184, 255, 0.10) 1px, transparent 1px);
   background-size: 28px 28px;
   background-position: -8px -8px;
 }
-.hero .wrap { position: relative; z-index: 2; width: 100%; }
+/* Homepage-only modifier: the orb needs a taller, opaque, vertically-
+   centered hero. Scoped so contact/services/about/404 (which share the
+   base .hero class but have no orb) are unaffected. */
+.hero--orb {
+  min-height: 660px;
+  display: flex;
+  align-items: center;
+  background: var(--bg); /* opaque so the site-wide #net-canvas doesn't show through behind the orb */
+}
+.hero--orb .wrap { position: relative; z-index: 2; width: 100%; }
 #hero-orb {
   position: absolute;
   inset: 0;
@@ -208,8 +213,36 @@ nav.route a.active::after { transform: scaleX(1); }
   pointer-events: none;
 }
 @media (max-width: 720px) {
-  .hero { min-height: 0; }
+  .hero--orb { min-height: 0; }
   #hero-orb { opacity: 0.55; }
+}
+
+.orb-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  pointer-events: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--blue);
+  background: rgba(17, 27, 46, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  text-decoration: none;
+  backdrop-filter: blur(2px);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  will-change: transform, opacity;
+}
+.orb-tag:hover {
+  color: var(--text);
+  border-color: var(--blue);
+  background: rgba(17, 27, 46, 0.94);
+}
+@media (max-width: 720px) {
+  .orb-tag { display: none; }
 }
 
 .status-pill {

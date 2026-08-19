@@ -132,33 +132,48 @@ void main() {
   scene.add(orb);
 
   /* ---------------------------------------------------------------- */
-  /* Orbiting accent point — a small "packet" circling the core        */
+  /* Orbiting IP tags — the five mosaic service IPs, circling the core, */
+  /* each a small glowing point in 3D with a screen-projected HTML     */
+  /* label that links down to its card in the "Where I come in" grid.  */
   /* ---------------------------------------------------------------- */
   const orbitGroup = new THREE.Group();
   scene.add(orbitGroup);
 
-  function makeOrbiter(radius, tiltDeg, speed, size, color) {
+  const IP_ORBITERS = [
+    { ip: '10.0.1.1', href: '#svc-10-0-1-1', radius: 2.35, tilt: 16,  speed: 0.30, phase: 0.0,  color: colorBright },
+    { ip: '10.0.2.1', href: '#svc-10-0-2-1', radius: 2.75, tilt: -22, speed: 0.22, phase: 1.3,  color: colorAccent },
+    { ip: '10.0.3.1', href: '#svc-10-0-3-1', radius: 2.15, tilt: 42,  speed: 0.26, phase: 2.6,  color: colorBright },
+    { ip: '10.0.4.1', href: '#svc-10-0-4-1', radius: 3.05, tilt: -6,  speed: 0.18, phase: 3.9,  color: colorAccent },
+    { ip: '10.0.5.1', href: '#svc-10-0-5-1', radius: 2.5,  tilt: 8,   speed: 0.24, phase: 5.2,  color: colorBright },
+  ];
+
+  const orbiters = IP_ORBITERS.map((cfg) => {
     const spriteMat = new THREE.SpriteMaterial({
-      color,
+      color: cfg.color,
       transparent: true,
       opacity: 0.95,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const sprite = new THREE.Sprite(spriteMat);
-    sprite.scale.set(size, size, 1);
+    sprite.scale.set(0.1, 0.1, 1);
     const pivot = new THREE.Group();
-    pivot.rotation.x = THREE.MathUtils.degToRad(tiltDeg);
-    sprite.position.set(radius, 0, 0);
+    pivot.rotation.x = THREE.MathUtils.degToRad(cfg.tilt);
+    pivot.rotation.z = cfg.phase;
+    sprite.position.set(cfg.radius, 0, 0);
     pivot.add(sprite);
     orbitGroup.add(pivot);
-    return { pivot, speed };
-  }
 
-  const orbiters = [
-    makeOrbiter(2.35, 18, 0.55, 0.16, colorBright),
-    makeOrbiter(2.7, -12, 0.34, 0.11, colorAccent),
-  ];
+    const tag = document.createElement('a');
+    tag.className = 'orb-tag';
+    tag.href = cfg.href;
+    tag.textContent = cfg.ip;
+    heroEl && heroEl.appendChild(tag);
+
+    return { pivot, sprite, speed: cfg.speed, tag };
+  });
+
+  const worldPos = new THREE.Vector3();
 
   /* ---------------------------------------------------------------- */
   /* Sizing — the canvas is contained in the hero, not the viewport    */
@@ -214,9 +229,27 @@ void main() {
     orb.rotation.x = mouse.y * 0.22;
     orbitGroup.rotation.y = -t * 0.05;
 
-    orbiters.forEach((o) => { o.pivot.rotation.z = t * o.speed; });
+    orbiters.forEach((o, i) => {
+      o.pivot.rotation.z = IP_ORBITERS[i].phase + t * o.speed;
+    });
 
     composer.render();
+
+    // Screen-project each orbiter's current world position onto the DOM
+    // so its IP tag rides along with the 3D point in real time.
+    const boxW = canvas.clientWidth || 1;
+    const boxH = canvas.clientHeight || 1;
+    orbiters.forEach((o) => {
+      o.sprite.getWorldPosition(worldPos);
+      const dist = worldPos.distanceTo(camera.position);
+      const depthFade = THREE.MathUtils.clamp(THREE.MathUtils.mapLinear(dist, 4, 9, 1, 0.32), 0.28, 1);
+      const ndc = worldPos.clone().project(camera);
+      const x = (ndc.x * 0.5 + 0.5) * boxW;
+      const y = (1 - (ndc.y * 0.5 + 0.5)) * boxH;
+      o.tag.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${(0.75 + depthFade * 0.35).toFixed(2)})`;
+      o.tag.style.opacity = depthFade.toFixed(2);
+    });
+
     if (!reduceMotion) requestAnimationFrame(frame);
   }
 
