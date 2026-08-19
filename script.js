@@ -592,16 +592,15 @@
       if (overlay.classList.contains("open")) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
       if (tag === "INPUT" || tag === "TEXTAREA") return;
-      // Two independent triggers, since keyboard-layout quirks can knock out
-      // any single one. Both are modifier-free single keys — Ctrl/Cmd
-      // combos (like Ctrl+K) are reserved by browser chrome for address-bar
-      // search and can't reliably be overridden from a page.
-      // "/" mirrors the GitHub/Slack/Reddit "press / to search" convention.
-      // Backtick via e.code checks the physical key position (works even on
-      // layouts like Belgian AZERTY where that key doesn't type ` or ~).
-      const isSlash = e.key === "/";
+      // Two independent triggers, both single unmodified keys checked by
+      // physical position (e.code) rather than produced character — no
+      // Ctrl/Cmd (reserved by browser chrome) and no punctuation that
+      // might sit behind Shift on a given layout (like "/" on Belgian
+      // AZERTY). "K" isn't one of the letters AZERTY remaps, so it's in
+      // the same physical spot and types the same character on both.
+      const isK = e.code === "KeyK" || e.key.toLowerCase() === "k";
       const isBacktick = e.code === "Backquote" || e.key === "`" || e.key === "~";
-      if (isSlash || isBacktick) {
+      if (isK || isBacktick) {
         e.preventDefault();
         openCli();
       }
@@ -612,7 +611,7 @@
       const hint = document.createElement("button");
       hint.type = "button";
       hint.className = "cli-hint";
-      hint.innerHTML = 'press <kbd>/</kbd> for terminal';
+      hint.innerHTML = 'press <kbd>k</kbd> for terminal';
       hint.addEventListener("click", openCli);
       footerRow.appendChild(hint);
     }
