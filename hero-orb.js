@@ -192,8 +192,18 @@ void main() {
     // Push the sphere toward the right side of the frame so the left
     // side stays clear for the headline/lede, using a small offscreen
     // camera shift rather than clipping the canvas box itself.
-    const skew = w > h ? 0.62 : 0;
-    camera.setViewOffset(w, h, -w * skew, 0, w, h);
+    // setViewOffset(fullW, fullH, x, y, w, h) renders the (w,h) window
+    // starting at (x,y) within a virtual (fullW,fullH) frame. With
+    // w === fullW, world-origin (normally at 50% across an unshifted
+    // view) lands at canvas-fraction (0.5 - x/fullW) of the rendered
+    // window — so to place it at targetFraction, x = (0.5 - targetFraction) * w.
+    if (w > h) {
+      const targetFraction = 0.68; // orb's horizontal position, 0=left edge, 1=right edge
+      const x = (0.5 - targetFraction) * w;
+      camera.setViewOffset(w, h, x, 0, w, h);
+    } else {
+      camera.clearViewOffset();
+    }
   }
 
   const ro = new ResizeObserver(resize);
