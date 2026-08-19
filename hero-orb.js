@@ -136,13 +136,19 @@ void main() {
     fbm(vPos * 1.6 + vec3(4.2, 1.9, uTime * 0.15)),
     fbm(vPos * 1.6 + vec3(9.1, 3.4, -uTime * 0.12))
   );
-  float flame = fbm(vPos * 1.9 + warp * 1.15 + vec3(0.0, 0.0, uTime * 0.1));
-  flame = smoothstep(-0.15, 0.55, flame);   // contrast: dark base vs. lit streaks
-  float hot = smoothstep(0.55, 0.95, flame); // brightest streak cores only
+  float raw = fbm(vPos * 1.9 + warp * 1.15 + vec3(0.0, 0.0, uTime * 0.1)); // ~[-0.8, 0.8] in practice
 
-  vec3 col = mix(uColorDeep, uColorBase, flame);
-  col = mix(col, uColorBright, hot);
-  col = mix(col, uColorHot, pow(hot, 2.0) * 0.55);
+  // Stagger three thresholds directly off the RAW noise value (not each
+  // other) so each tier gets real screen coverage instead of "hot"
+  // requiring two separate >0.55 crossings in sequence, which almost
+  // never happened — that's why it went muted/flat instead of streaky.
+  float baseMix   = smoothstep(-0.45, 0.05, raw);
+  float brightMix = smoothstep(-0.05, 0.32, raw);
+  float hotMix    = smoothstep(0.22, 0.5, raw);
+
+  vec3 col = mix(uColorDeep, uColorBase, baseMix);
+  col = mix(col, uColorBright, brightMix);
+  col = mix(col, uColorHot, hotMix * 0.92);
 
   // Subtle key-light shading so the form still reads as 3D, without a
   // specular dot — the reference has no glossy highlight, the brightness
@@ -155,7 +161,7 @@ void main() {
   col = mix(col, uColorBright, fresnel * 0.4);
 
   // Faint green accent only in the very hottest streak cores.
-  col = mix(col, uColorAccent, hot * hot * 0.1);
+  col = mix(col, uColorAccent, hotMix * hotMix * 0.1);
 
   gl_FragColor = vec4(col, 1.0);
 }
