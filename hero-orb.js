@@ -35,7 +35,7 @@ if (canvas) {
   /* Postprocessing — a single bloom pass for the glow                 */
   /* ---------------------------------------------------------------- */
   const renderPass = new RenderPass(scene, camera);
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.5, 0.35);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.32, 0.35);
   const composer = new EffectComposer(renderer);
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
@@ -144,9 +144,19 @@ void main() {
   // attempt placed thresholds inside the dense dark cluster (-0.45..0.32),
   // pushing most of the surface toward bright. These sit further down,
   // so the bottom ~25-30% of the distribution stays genuinely dark.
-  float baseMix   = smoothstep(-1.0, -0.5, raw);
-  float brightMix = smoothstep(-0.3, 0.0, raw);
-  float hotMix    = smoothstep(-0.05, 0.3, raw);
+  // Narrower transition bands than before (same centers, less spread) —
+  // wide smoothstep ranges blur the boundary between tonal zones into a
+  // soft gradient, which reads as "low detail" even with the right
+  // overall balance. Crisper edges here.
+  float baseMix   = smoothstep(-0.85, -0.65, raw);
+  float brightMix = smoothstep(-0.22, -0.08, raw);
+  float hotMix    = smoothstep(0.05, 0.2, raw);
+
+  // High-frequency detail layer, independent of the main pattern's scale
+  // (7.0 vs. 1.9/1.6) — this is what actually reads as "detail" rather
+  // than smooth blobby shapes: fine grain modulating brightness locally,
+  // roughly zero-mean so it doesn't shift the overall balance.
+  float fineDetail = fbm(vPos * 7.5 + vec3(uTime * 0.06, -uTime * 0.04, uTime * 0.05));
 
   // The gap between p75 and p90 turned out to be a near step-function
   // (values jump almost straight to the clipped max), so ANY threshold
@@ -174,6 +184,10 @@ void main() {
 
   // Faint green accent only in the very hottest streak cores.
   col = mix(col, uColorAccent, hotMix * hotMix * 0.1);
+
+  // Apply the fine detail grain last, after all the broad-scale color
+  // decisions, so it modulates everything uniformly.
+  col *= 0.82 + fineDetail * 0.36;
 
   gl_FragColor = vec4(col, 1.0);
 }
