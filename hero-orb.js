@@ -35,7 +35,7 @@ if (canvas) {
   /* Postprocessing — a single bloom pass for the glow                 */
   /* ---------------------------------------------------------------- */
   const renderPass = new RenderPass(scene, camera);
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 1.05, 0.6, 0.1);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.5, 0.35);
   const composer = new EffectComposer(renderer);
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
@@ -124,40 +124,40 @@ float fbm(vec3 p) {
 void main() {
   vec3 N = normalize(vNormal);
   vec3 V = normalize(vViewPosition);
-  float fresnel = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.2);
+  float fresnel = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.5);
 
-  // Layered, slow-flowing plasma — fbm instead of a single noise sample
-  // gives soft cloud-like density instead of a speckled/blotchy pattern.
-  float plasma = fbm(vPos * 1.5 + vec3(uTime * 0.1, uTime * 0.07, -uTime * 0.05));
-  plasma = smoothstep(-0.45, 0.7, plasma);
-  vec3 col = mix(uColorDeep, uColorBase, plasma);
-  col = mix(col, uColorBright, plasma * plasma);
+  // Domain-warped fbm: distort the sample position with a second fbm
+  // field before sampling again. This is what gives fire/marble/plasma
+  // shaders their organic, high-contrast, streaky look — plain fbm alone
+  // just gives soft blobby clouds, which is what was reading as "gray
+  // moon" before. Compare to the corner-flame warp used elsewhere.
+  vec3 warp = vec3(
+    fbm(vPos * 1.6 + vec3(0.0, 0.0, uTime * 0.18)),
+    fbm(vPos * 1.6 + vec3(4.2, 1.9, uTime * 0.15)),
+    fbm(vPos * 1.6 + vec3(9.1, 3.4, -uTime * 0.12))
+  );
+  float flame = fbm(vPos * 1.9 + warp * 1.15 + vec3(0.0, 0.0, uTime * 0.1));
+  flame = smoothstep(-0.15, 0.55, flame);   // contrast: dark base vs. lit streaks
+  float hot = smoothstep(0.55, 0.95, flame); // brightest streak cores only
 
-  // Fixed key light (upper-left-front, classic product-shot angle) drives
-  // real diffuse shading + a specular hotspot — without this the sphere
-  // has no directional cue at all and reads as a flat painted disc.
-  vec3 L = normalize(vec3(-0.55, 0.6, 0.85));
-  vec3 H = normalize(L + V);
+  vec3 col = mix(uColorDeep, uColorBase, flame);
+  col = mix(col, uColorBright, hot);
+  col = mix(col, uColorHot, pow(hot, 2.0) * 0.55);
+
+  // Subtle key-light shading so the form still reads as 3D, without a
+  // specular dot — the reference has no glossy highlight, the brightness
+  // comes entirely from the flame pattern itself.
+  vec3 L = normalize(vec3(-0.4, 0.5, 0.85));
   float diff = max(dot(N, L), 0.0);
-  float spec = pow(max(dot(N, H), 0.0), 60.0);
-  col *= 0.5 + diff * 0.55;
-  col += uColorHot * spec * 1.1;
+  col *= 0.62 + diff * 0.4;
 
-  // Cheap fake-environment reflection: reflect the view ray and sample a
-  // simple two-tone vertical "sky" gradient — a lightweight stand-in for
-  // a real cubemap that still sells a glossy, not-matte surface.
-  vec3 R = reflect(-V, N);
-  float skyT = clamp(R.y * 0.5 + 0.5, 0.0, 1.0);
-  vec3 envColor = mix(uColorDeep, uColorHot, pow(skyT, 2.2));
-  col = mix(col, envColor, 0.16 * (0.35 + fresnel));
+  // Thin, moderate rim — stays blue, never washes to white.
+  col = mix(col, uColorBright, fresnel * 0.4);
 
-  // A faint accent-color glint, much subtler than before, then the rim.
-  float glint = fbm(vPos * 4.0 - vec3(uTime * 0.3, uTime * 0.22, uTime * 0.18));
-  col = mix(col, uColorAccent, smoothstep(0.82, 0.97, glint) * 0.18);
-  col = mix(col, uColorHot, pow(fresnel, 1.6));
+  // Faint green accent only in the very hottest streak cores.
+  col = mix(col, uColorAccent, hot * hot * 0.1);
 
-  float glow = 0.5 + fresnel * 1.0 + plasma * 0.2;
-  gl_FragColor = vec4(col * glow, 1.0);
+  gl_FragColor = vec4(col, 1.0);
 }
 `;
 
