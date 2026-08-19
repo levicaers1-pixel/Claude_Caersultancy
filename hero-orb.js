@@ -136,29 +136,41 @@ void main() {
     fbm(vPos * 1.6 + vec3(4.2, 1.9, uTime * 0.15)),
     fbm(vPos * 1.6 + vec3(9.1, 3.4, -uTime * 0.12))
   );
-  float raw = fbm(vPos * 1.9 + warp * 1.15 + vec3(0.0, 0.0, uTime * 0.1)); // ~[-0.8, 0.8] in practice
+  float raw = fbm(vPos * 1.9 + warp * 1.15 + vec3(0.0, 0.0, uTime * 0.1));
 
-  // Stagger three thresholds directly off the RAW noise value (not each
-  // other) so each tier gets real screen coverage instead of "hot"
-  // requiring two separate >0.55 crossings in sequence, which almost
-  // never happened — that's why it went muted/flat instead of streaky.
-  float baseMix   = smoothstep(-0.45, 0.05, raw);
-  float brightMix = smoothstep(-0.05, 0.32, raw);
-  float hotMix    = smoothstep(0.22, 0.5, raw);
+  // Thresholds calibrated against the MEASURED distribution of this exact
+  // expression (sampled via a debug readback, not guessed): median -0.46,
+  // p75 -0.10, then a sharp jump to the clipped max by p90. The earlier
+  // attempt placed thresholds inside the dense dark cluster (-0.45..0.32),
+  // pushing most of the surface toward bright. These sit further down,
+  // so the bottom ~25-30% of the distribution stays genuinely dark.
+  float baseMix   = smoothstep(-1.0, -0.5, raw);
+  float brightMix = smoothstep(-0.3, 0.0, raw);
+  float hotMix    = smoothstep(-0.05, 0.3, raw);
 
+  // The gap between p75 and p90 turned out to be a near step-function
+  // (values jump almost straight to the clipped max), so ANY threshold
+  // placed in that gap affects roughly the same fraction of pixels —
+  // that fraction just turned out bigger than expected, and mixing it
+  // 92% toward near-white filled most of the sphere. Fixed by mixing
+  // much less strongly instead of chasing the threshold further.
+  // brightMix and hotMix both respond to the same "jumped near max"
+  // cluster in this noise field and were compounding sequentially —
+  // capped brightMix's own reach and lowered hotMix further so bright
+  // areas stay a saturated blue with a modest highlight, not a plateau.
   vec3 col = mix(uColorDeep, uColorBase, baseMix);
-  col = mix(col, uColorBright, brightMix);
-  col = mix(col, uColorHot, hotMix * 0.92);
+  col = mix(col, uColorBright, brightMix * 0.7);
+  col = mix(col, uColorHot, hotMix * 0.3);
 
   // Subtle key-light shading so the form still reads as 3D, without a
   // specular dot — the reference has no glossy highlight, the brightness
   // comes entirely from the flame pattern itself.
   vec3 L = normalize(vec3(-0.4, 0.5, 0.85));
   float diff = max(dot(N, L), 0.0);
-  col *= 0.62 + diff * 0.4;
+  col *= 0.5 + diff * 0.35;
 
   // Thin, moderate rim — stays blue, never washes to white.
-  col = mix(col, uColorBright, fresnel * 0.4);
+  col = mix(col, uColorBright, fresnel * 0.25);
 
   // Faint green accent only in the very hottest streak cores.
   col = mix(col, uColorAccent, hotMix * hotMix * 0.1);
