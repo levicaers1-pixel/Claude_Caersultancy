@@ -148,7 +148,17 @@
     let w, h, nodes;
     const LINE = "rgba(79, 184, 255, 0.14)";
     const NODE = "rgba(79, 184, 255, 0.4)";
-    const PACKET = "rgba(95, 227, 161, 0.95)";
+    const PACKET_RGB = "95, 227, 161";
+    const WHITE_RGB = "255, 255, 255";
+
+    function lerpRGB(a, b, t) {
+      const pa = a.split(",").map(Number);
+      const pb = b.split(",").map(Number);
+      const r = Math.round(pa[0] + (pb[0] - pa[0]) * t);
+      const g = Math.round(pa[1] + (pb[1] - pa[1]) * t);
+      const bch = Math.round(pa[2] + (pb[2] - pa[2]) * t);
+      return r + "," + g + "," + bch;
+    }
 
     function resize() {
       w = canvas.width = window.innerWidth;
@@ -170,7 +180,7 @@
 
     const packets = [];
     function maybeSpawnPacket() {
-      if (packets.length > 6 || Math.random() > 0.02) return;
+      if (packets.length > 8 || Math.random() > 0.026) return;
       const a = nodes[Math.floor(Math.random() * nodes.length)];
       let best = null, bestD = 150;
       nodes.forEach((n) => {
@@ -217,9 +227,25 @@
         if (p.t >= 1) { packets.splice(i, 1); continue; }
         const x = p.a.x + (p.b.x - p.a.x) * p.t;
         const y = p.a.y + (p.b.y - p.a.y) * p.t;
-        ctx.fillStyle = PACKET;
+
+        // Triangle pulse: 0 at either end of the hop, 1 at the midpoint —
+        // packets surge as they cross, like a signal peaking mid-transit.
+        const pulse = 1 - Math.abs(p.t - 0.5) * 2;
+        const glowR = 3 + pulse * 5;
+        const coreR = 1.8 + pulse * 1.3;
+
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+        glow.addColorStop(0, "rgba(" + PACKET_RGB + ", " + (0.3 + pulse * 0.35) + ")");
+        glow.addColorStop(1, "rgba(" + PACKET_RGB + ", 0)");
+        ctx.fillStyle = glow;
         ctx.beginPath();
-        ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+        ctx.arc(x, y, glowR, 0, Math.PI * 2);
+        ctx.fill();
+
+        const core = lerpRGB(PACKET_RGB, WHITE_RGB, Math.min(1, pulse * 1.2));
+        ctx.fillStyle = "rgba(" + core + ", 0.95)";
+        ctx.beginPath();
+        ctx.arc(x, y, coreR, 0, Math.PI * 2);
         ctx.fill();
       }
       raf = requestAnimationFrame(frame);
