@@ -417,7 +417,199 @@
     window.addEventListener("pointerdown", finish, { once: true });
   }
 
+  /* ---- Hidden terminal (press ` to open) ---- */
+  function initCliEasterEgg() {
+    const overlay = document.createElement("div");
+    overlay.className = "cli-overlay";
+    overlay.innerHTML =
+      '<div class="cli-panel" role="dialog" aria-label="Terminal">' +
+      '<div class="cli-titlebar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="path">visitor@caersultancy: ~</span></div>' +
+      '<div class="cli-output"></div>' +
+      '<div class="cli-inputrow"><span class="prompt">$</span><input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal input" /></div>' +
+      "</div>";
+    document.body.appendChild(overlay);
+
+    const outputEl = overlay.querySelector(".cli-output");
+    const inputEl = overlay.querySelector("input");
+
+    function escapeHtml(s) {
+      const div = document.createElement("div");
+      div.textContent = s;
+      return div.innerHTML;
+    }
+
+    function printLine(html, cls) {
+      const div = document.createElement("div");
+      div.className = "cli-line" + (cls ? " " + cls : "");
+      div.innerHTML = html;
+      outputEl.appendChild(div);
+      outputEl.scrollTop = outputEl.scrollHeight;
+    }
+
+    function goTo(page, delay) {
+      setTimeout(() => { window.location.href = page; }, delay || 900);
+    }
+
+    const commands = {
+      help() {
+        printLine("available commands:");
+        printLine("&nbsp;&nbsp;help&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;show this list");
+        printLine("&nbsp;&nbsp;whoami&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;who you're talking to");
+        printLine("&nbsp;&nbsp;ls&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list pages");
+        printLine("&nbsp;&nbsp;about&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;short bio");
+        printLine("&nbsp;&nbsp;services&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;what I actually do");
+        printLine("&nbsp;&nbsp;ping [host]&nbsp;&nbsp;&nbsp;&nbsp;ping a host (fake, but honest)");
+        printLine("&nbsp;&nbsp;contact&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;get in touch");
+        printLine("&nbsp;&nbsp;sudo hire-levi&nbsp;&nbsp;&nbsp;...try it");
+        printLine("&nbsp;&nbsp;clear&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;clear the screen");
+        printLine("&nbsp;&nbsp;exit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;close this terminal");
+      },
+      whoami() {
+        printLine("guest — evaluating whether this guy actually knows networking.");
+        printLine("fair. try `services` or `ping caersultancy.com`.");
+      },
+      ls() {
+        ["index.html", "services.html", "about.html", "contact.html"].forEach((p) => printLine("&nbsp;&nbsp;" + p));
+      },
+      cat(arg) {
+        if (arg === "about.txt") {
+          commands.about();
+        } else {
+          printLine("cat: " + escapeHtml(arg || "") + ": No such file", "err");
+        }
+      },
+      about() {
+        printLine("Levi Caers — independent network architect, Antwerp.");
+        printLine("10+ years in enterprise networking. carried the pager. still does.");
+        printLine("opening about.html ...", "ok");
+        goTo("about.html");
+      },
+      services() {
+        printLine("architecture & design, wireless & site design, security & NAC, cloud-managed networking, presales.", "ok");
+        printLine("opening services.html ...", "ok");
+        goTo("services.html");
+      },
+      ping(arg) {
+        const host = arg || "caersultancy.com";
+        printLine("PING " + escapeHtml(host) + ": 56 data bytes");
+        let seq = 0;
+        const iv = setInterval(() => {
+          seq++;
+          const t = (8 + Math.random() * 6).toFixed(1);
+          printLine("64 bytes from " + escapeHtml(host) + ": icmp_seq=" + seq + " time=" + t + " ms");
+          if (seq >= 3) {
+            clearInterval(iv);
+            printLine("--- " + escapeHtml(host) + " ping statistics ---", "ok");
+            printLine("3 packets transmitted, 3 received, 0% packet loss", "ok");
+          }
+        }, 260);
+      },
+      contact() {
+        printLine('mail: <a href="mailto:levi@caersultancy.com">levi@caersultancy.com</a>');
+        printLine("opening contact.html ...", "ok");
+        goTo("contact.html");
+      },
+      clear() {
+        outputEl.innerHTML = "";
+      },
+      exit() {
+        closeCli();
+      },
+    };
+
+    function runSudo(rest) {
+      if (rest.trim() === "hire-levi") {
+        printLine("[sudo] password for visitor: ********", "ok");
+        printLine("permission granted.", "ok");
+        printLine("redirecting to contact.html ...", "ok");
+        goTo("contact.html", 1000);
+      } else {
+        printLine("visitor is not in the sudoers file. this incident will be reported.", "err");
+      }
+    }
+
+    const history = [];
+    let historyIdx = -1;
+
+    function handleCommand(raw) {
+      const trimmed = raw.trim();
+      printLine(escapeHtml(trimmed), "echo");
+      if (!trimmed) return;
+      history.push(trimmed);
+      historyIdx = history.length;
+
+      const parts = trimmed.split(/\s+/);
+      const cmd = parts[0].toLowerCase();
+      const rest = parts.slice(1).join(" ");
+
+      if (cmd === "sudo") { runSudo(rest); return; }
+      if (commands[cmd]) { commands[cmd](rest); return; }
+      printLine("command not found: " + escapeHtml(cmd) + " — try `help`", "err");
+    }
+
+    function openCli() {
+      if (overlay.classList.contains("open")) return;
+      overlay.classList.add("open");
+      if (!outputEl.childElementCount) {
+        printLine("caersultancy terminal — type `help` to see what's here.", "ok");
+        printLine("");
+      }
+      inputEl.value = "";
+      setTimeout(() => inputEl.focus(), 50);
+    }
+    function closeCli() {
+      overlay.classList.remove("open");
+      inputEl.blur();
+    }
+
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const val = inputEl.value;
+        inputEl.value = "";
+        handleCommand(val);
+      } else if (e.key === "Escape") {
+        closeCli();
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (history.length) {
+          historyIdx = Math.max(0, historyIdx - 1);
+          inputEl.value = history[historyIdx] || "";
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (history.length) {
+          historyIdx = Math.min(history.length, historyIdx + 1);
+          inputEl.value = history[historyIdx] || "";
+        }
+      }
+    });
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeCli();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (overlay.classList.contains("open")) return;
+      const tag = (document.activeElement && document.activeElement.tagName) || "";
+      if ((e.key === "`" || e.key === "~") && tag !== "INPUT" && tag !== "TEXTAREA") {
+        e.preventDefault();
+        openCli();
+      }
+    });
+
+    const footerRow = document.querySelector("footer.site .footer-row");
+    if (footerRow) {
+      const hint = document.createElement("button");
+      hint.type = "button";
+      hint.className = "cli-hint";
+      hint.innerHTML = 'press <kbd>~</kbd> for terminal';
+      hint.addEventListener("click", openCli);
+      footerRow.appendChild(hint);
+    }
+  }
+
   initNetCanvas();
+  initCliEasterEgg();
   bootThenReveal(() => {
     initDecodeText();
     initTraceroute();
