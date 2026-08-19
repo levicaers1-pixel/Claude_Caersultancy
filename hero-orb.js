@@ -35,7 +35,7 @@ if (canvas) {
   /* Postprocessing — a single bloom pass for the glow                 */
   /* ---------------------------------------------------------------- */
   const renderPass = new RenderPass(scene, camera);
-  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.85, 0.55, 0.18);
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 1.05, 0.6, 0.1);
   const composer = new EffectComposer(renderer);
   composer.addPass(renderPass);
   composer.addPass(bloomPass);
@@ -71,9 +71,12 @@ float snoise(vec3 v){
 `;
 
   /* ---------------------------------------------------------------- */
-  /* Orb — displaced sphere with a plasma/fresnel shader                */
+  /* Orb — displaced sphere with a layered plasma / key-light / fake-env */
+  /* reflection shader                                                  */
   /* ---------------------------------------------------------------- */
-  const geometry = new THREE.IcosahedronGeometry(1.55, 48);
+  // detail:48 previously produced ~46k faces for a plain sphere — 12 looks
+  // identical at this size and is a fraction of the vertex cost.
+  const geometry = new THREE.IcosahedronGeometry(1.55, 12);
 
   const uniforms = {
     uTime:        { value: 0 },
@@ -90,10 +93,15 @@ varying vec3 vNormal;
 varying vec3 vViewPosition;
 varying vec3 vPos;
 ${SNOISE}
+float fbm(vec3 p) {
+  float value = 0.0; float amp = 0.5;
+  for (int i = 0; i < 4; i++) { value += amp * snoise(p); p *= 2.02; amp *= 0.5; }
+  return value;
+}
 void main() {
   vec3 pos = position;
-  float n = snoise(pos * 1.6 + vec3(0.0, 0.0, uTime * 0.12));
-  pos += normalize(position) * n * 0.075;
+  float n = fbm(pos * 1.3 + vec3(0.0, 0.0, uTime * 0.08));
+  pos += normalize(position) * n * 0.065;
 
   vPos = pos;
   vNormal = normalize(normalMatrix * normal);
@@ -108,21 +116,47 @@ uniform float uTime;
 uniform vec3 uColorDeep; uniform vec3 uColorBase; uniform vec3 uColorBright; uniform vec3 uColorHot; uniform vec3 uColorAccent;
 varying vec3 vNormal; varying vec3 vViewPosition; varying vec3 vPos;
 ${SNOISE}
+float fbm(vec3 p) {
+  float value = 0.0; float amp = 0.5;
+  for (int i = 0; i < 4; i++) { value += amp * snoise(p); p *= 2.02; amp *= 0.5; }
+  return value;
+}
 void main() {
-  vec3 viewDir = normalize(vViewPosition);
-  float fresnel = pow(1.0 - clamp(dot(normalize(vNormal), viewDir), 0.0, 1.0), 2.4);
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(vViewPosition);
+  float fresnel = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), 2.2);
 
-  float plasma = snoise(vPos * 2.2 + vec3(uTime * 0.22, uTime * 0.16, -uTime * 0.1));
-  plasma = smoothstep(-0.5, 0.9, plasma);
-  float veins = snoise(vPos * 5.0 + vec3(-uTime * 0.3, uTime * 0.22, uTime * 0.18));
-  float accent = smoothstep(0.78, 0.95, veins);
-
+  // Layered, slow-flowing plasma — fbm instead of a single noise sample
+  // gives soft cloud-like density instead of a speckled/blotchy pattern.
+  float plasma = fbm(vPos * 1.5 + vec3(uTime * 0.1, uTime * 0.07, -uTime * 0.05));
+  plasma = smoothstep(-0.45, 0.7, plasma);
   vec3 col = mix(uColorDeep, uColorBase, plasma);
   col = mix(col, uColorBright, plasma * plasma);
-  col = mix(col, uColorAccent, accent * 0.35);
-  col = mix(col, uColorHot, pow(fresnel, 1.3));
 
-  float glow = 0.55 + fresnel * 0.9 + plasma * 0.25;
+  // Fixed key light (upper-left-front, classic product-shot angle) drives
+  // real diffuse shading + a specular hotspot — without this the sphere
+  // has no directional cue at all and reads as a flat painted disc.
+  vec3 L = normalize(vec3(-0.55, 0.6, 0.85));
+  vec3 H = normalize(L + V);
+  float diff = max(dot(N, L), 0.0);
+  float spec = pow(max(dot(N, H), 0.0), 60.0);
+  col *= 0.5 + diff * 0.55;
+  col += uColorHot * spec * 1.1;
+
+  // Cheap fake-environment reflection: reflect the view ray and sample a
+  // simple two-tone vertical "sky" gradient — a lightweight stand-in for
+  // a real cubemap that still sells a glossy, not-matte surface.
+  vec3 R = reflect(-V, N);
+  float skyT = clamp(R.y * 0.5 + 0.5, 0.0, 1.0);
+  vec3 envColor = mix(uColorDeep, uColorHot, pow(skyT, 2.2));
+  col = mix(col, envColor, 0.16 * (0.35 + fresnel));
+
+  // A faint accent-color glint, much subtler than before, then the rim.
+  float glint = fbm(vPos * 4.0 - vec3(uTime * 0.3, uTime * 0.22, uTime * 0.18));
+  col = mix(col, uColorAccent, smoothstep(0.82, 0.97, glint) * 0.18);
+  col = mix(col, uColorHot, pow(fresnel, 1.6));
+
+  float glow = 0.5 + fresnel * 1.0 + plasma * 0.2;
   gl_FragColor = vec4(col * glow, 1.0);
 }
 `;
