@@ -591,11 +591,15 @@
     window.addEventListener("keydown", (e) => {
       if (overlay.classList.contains("open")) return;
       const tag = (document.activeElement && document.activeElement.tagName) || "";
-      // e.code checks the physical key position (works on AZERTY etc. where
-      // that key doesn't actually type ` or ~), e.key is a fallback for
-      // browsers/layouts where code is unavailable.
-      const isTrigger = e.code === "Backquote" || e.key === "`" || e.key === "~";
-      if (isTrigger && tag !== "INPUT" && tag !== "TEXTAREA") {
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      // Two independent triggers, since keyboard-layout quirks can knock out
+      // any single one: Ctrl/Cmd+K (a well-established command-palette
+      // shortcut, keyed off a letter so it's layout-stable) and the
+      // physical backtick key position via e.code (works even on layouts
+      // like Belgian AZERTY where that key doesn't type ` or ~ directly).
+      const isCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k";
+      const isBacktick = e.code === "Backquote" || e.key === "`" || e.key === "~";
+      if (isCtrlK || isBacktick) {
         e.preventDefault();
         openCli();
       }
@@ -606,7 +610,7 @@
       const hint = document.createElement("button");
       hint.type = "button";
       hint.className = "cli-hint";
-      hint.innerHTML = 'press <kbd>~</kbd> for terminal';
+      hint.innerHTML = 'press <kbd>ctrl</kbd>+<kbd>k</kbd> for terminal';
       hint.addEventListener("click", openCli);
       footerRow.appendChild(hint);
     }
